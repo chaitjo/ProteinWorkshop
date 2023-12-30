@@ -3,7 +3,7 @@ datamodule:
   data_dir: ${env.paths.data}/afdb_rep_v4/
   database: "afdb_rep_v4"
   batch_size: 32
-  num_workers: 4
+  num_workers: 16
 
   train_split: 0.98
   val_split: 0.01

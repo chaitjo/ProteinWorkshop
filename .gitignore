@@ -141,6 +141,7 @@ proteinworkshop/data/afdb_swissprot_v4
 raw/
 proteinworkshop/data/*
 !proteinworkshop/data/.gitkeep
+data/
 
 logs/
 wandb/
