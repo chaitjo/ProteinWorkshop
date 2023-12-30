@@ -613,7 +613,14 @@ class BenchMarkModel(BaseModel):
         :return: Loss
         :rtype: torch.Tensor
         """
-        return self._do_step(batch, batch_idx, "train")
+        try:
+            return self._do_step(batch, batch_idx, "train")
+        except RuntimeError as e:
+            if "CUDA out of memory" not in str(e):
+                raise(e)
+            torch.cuda.empty_cache()
+            logger.info(f"Skipping training batch {batch_idx} due to OOM error...")
+            return
 
     def validation_step(
         self, batch: Union[Batch, ProteinBatch], batch_idx: int
