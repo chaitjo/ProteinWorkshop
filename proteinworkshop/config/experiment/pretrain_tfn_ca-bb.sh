@@ -1,1 +1,3 @@
-HYDRA_FULL_ERROR=1 python proteinworkshop/train.py encoder=tfn task=structure_denoising dataset=afdb_rep_v4 features=ca_bb trainer=gpu_accum scheduler=linear_warmup_cosine_decay callbacks.model_checkpoint.every_n_train_steps=1000 logger=wandb
+HYDRA_FULL_ERROR=1 python proteinworkshop/train.py encoder=tfn task=structure_denoising dataset=afdb_rep_v4 features=ca_bb trainer=gpu_accum scheduler=linear_warmup_cosine_decay callbacks.model_checkpoint.every_n_train_steps=1000 logger=wandb name=pretrain_tfn_ca-bb
+
+HYDRA_FULL_ERROR=1 python proteinworkshop/finetune.py encoder=tfn task=multiple_graph_classification dataset=fold_fold features=ca_bb ckpt_path=/home/ckj24/ProteinWorkshop/logs/train/runs/2023-12-27_09-41-07/checkpoints/last.ckpt trainer=gpu scheduler=plateau trainer.max_epochs=150 +test=True logger=wandb name=finetune_tfn_ca-bb_fold
