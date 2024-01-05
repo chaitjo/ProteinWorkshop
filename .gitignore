@@ -144,12 +144,12 @@ proteinworkshop/data/*
 data/
 
 logs/
+ProteinWorkshop/
 wandb/
 .DS_Store
 .env
 
-# Visualisations
-visualisations/
-
 # Explanations
 explanations/
+# Visualisations
+visualisations/
