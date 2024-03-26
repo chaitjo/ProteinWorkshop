@@ -26,6 +26,7 @@ from proteinworkshop import (
 )
 from proteinworkshop.configs import config
 from proteinworkshop.models.base import BenchMarkModel
+from proteinworkshop.devices import xpu
 
 graphein.verbose(False)
 lt.monkey_patch()
