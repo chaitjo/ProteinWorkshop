@@ -100,13 +100,13 @@ With a local virtual environment activated (e.g., one created with `conda create
     # e.g., to install PyTorch with CUDA 11.8 support on Linux:
     pip install torch==2.1.2+cu118 torchvision==0.16.2+cu118 torchaudio==2.1.2+cu118 --index-url https://download.pytorch.org/whl/cu118
 
-    # e.g., to install PyTorch for Dawn
-    module load default-dawn
+    # e.g., to install PyTorch for XPU/Dawn
+    module load default-dawn gcc
     source /usr/local/dawn/software/external/intel-oneapi/2024.0/setvars.sh
     export ZE_FLAT_DEVICE_HIERARCHY=COMPOSITE
     python -m pip install torch==2.1.0a0 torchvision==0.16.0a0 torchaudio==2.1.0a0 intel-extension-for-pytorch==2.1.10+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
     
-    # check installation
+    # check installation on XPU
     python -c "import torch; import intel_extension_for_pytorch as ipex; print(torch.__version__); print(ipex.__version__); [print(f'[{i}]: {torch.xpu.get_device_properties(i)}') for i in range(torch.xpu.device_count())];"
     ```
 
