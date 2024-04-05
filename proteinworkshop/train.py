@@ -147,8 +147,6 @@ def train_model(
     with torch.no_grad():
         datamodule.setup(stage="lazy_init")  # type: ignore
         batch = next(iter(datamodule.val_dataloader()))
-        # log.info(f"Unfeaturized batch: {batch}")
-        # batch = model.featurise(batch)
         log.info(f"Featurized batch: {batch}")
         log.info(f"Example labels: {model.get_labels(batch)}")
         # Check batch has required attributes

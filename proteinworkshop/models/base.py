@@ -22,7 +22,6 @@ from proteinworkshop.utils.memory_utils import clean_up_torch_gpu_memory
 
 class BaseModel(L.LightningModule, abc.ABC):
     config: DictConfig
-    # featuriser: nn.Module
     losses: Dict[str, Callable]
     task_transform: Optional[Callable]
     metric_names: List[str]
@@ -80,24 +79,6 @@ class BaseModel(L.LightningModule, abc.ABC):
         :rtype: torch.Tensor
         """
         ...
-
-    # def featurise(
-    #     self, batch: Union[Batch, ProteinBatch]
-    # ) -> Union[Batch, ProteinBatch]:
-    #     """Applies the featuriser (``self.featuriser``) to a batch of data.
-
-    #     .. seealso::
-    #         :py:class:proteinworkshop.features.factory.ProteinFeaturiser
-
-    #     :param batch: Batch of data
-    #     :type batch: Union[Batch, ProteinBatch]
-    #     :return: Featurised batch
-    #     :rtype: Union[Batch, ProteinBatch]
-    #     """
-    #     out = self.featuriser(batch)
-    #     if self.task_transform is not None:
-    #         out = self.task_transform(out)
-    #     return out
 
     def get_labels(self, batch: Union[Batch, ProteinBatch]) -> Label:
         """
@@ -277,22 +258,6 @@ class BaseModel(L.LightningModule, abc.ABC):
             for k, v in loss_dict.items()
         }
     
-    # TODO move featurisation to CPU during data loading
-    # def on_after_batch_transfer(
-    #     self, batch: Union[Batch, ProteinBatch], dataloader_idx: int
-    # ) -> Union[Batch, ProteinBatch]:
-    #     """
-    #     Featurise batch **after** it has been transferred to the correct device.
-
-    #     :param batch: Batch of data
-    #     :type batch: Batch
-    #     :param dataloader_idx: Index of dataloader
-    #     :type dataloader_idx: int
-    #     :return: Featurised batch
-    #     :rtype: Union[Batch, ProteinBatch]
-    #     """
-    #     return self.featurise(batch)
-
     def configure_metrics(self):
         """
         Instantiates metrics from config.
@@ -432,10 +397,6 @@ class BenchMarkModel(BaseModel):
         self.metrics = self.configure_metrics()
         logger.info(self.metric_names)
 
-        # logger.info("Instantiating featuriser...")
-        # self.featuriser: nn.Module = hydra.utils.instantiate(cfg.features)
-        # logger.info(self.featuriser)
-
         logger.info("Instantiating task transform...")
         self.task_transform = hydra.utils.instantiate(
             cfg.get("task.transform")
@@ -443,29 +404,6 @@ class BenchMarkModel(BaseModel):
         logger.info(self.task_transform)
 
         self.save_hyperparameters()
-
-        # self.example_input_array = self._create_example_batch()
-
-    # def _create_example_batch(self) -> ProteinBatch:
-    #     """Creates an example batch for model inspection (including
-    #     featurisation and transformation as specified by the config).
-
-    #     :return: Example batch of data, featurised and transformed as specified
-    #         by the config.
-    #     :rtype: ProteinBatch
-    #     """
-    #     with torch.no_grad():
-    #         proteins = [
-    #             get_random_protein()
-    #             for _ in range(self.config.dataset.datamodule.batch_size)
-    #         ]
-    #         for p in proteins:
-    #             setattr(p, "x", torch.zeros(p.coords.shape[0]))
-    #             setattr(
-    #                 p, "seq_pos", torch.arange(p.coords.shape[0]).unsqueeze(-1)
-    #             )
-    #         batch = ProteinBatch.from_data_list(proteins)
-    #         return self.featurise(batch)
 
     @typechecker
     def forward(self, batch: Union[Batch, ProteinBatch]) -> ModelOutput:

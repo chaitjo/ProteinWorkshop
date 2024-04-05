@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Callable, Dict, Iterable, List, Literal, Optional
 
 import omegaconf
-from omegaconf import DictConfig
 import wget
 from graphein.protein.tensor.dataloader import ProteinDataLoader
 from loguru import logger
