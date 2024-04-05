@@ -101,10 +101,18 @@ With a local virtual environment activated (e.g., one created with `conda create
     pip install torch==2.1.2+cu118 torchvision==0.16.2+cu118 torchaudio==2.1.2+cu118 --index-url https://download.pytorch.org/whl/cu118
 
     # e.g., to install PyTorch for XPU/Dawn
+    mamba activate ~/rds/hpc-work/envs/pw_dawn/
     module load default-dawn gcc
-    source /usr/local/dawn/software/external/intel-oneapi/2024.0/setvars.sh
+    source /usr/local/dawn/software/external/intel-oneapi/2024.0/setvars.sh --force
     export ZE_FLAT_DEVICE_HIERARCHY=COMPOSITE
-    python -m pip install torch==2.1.0a0 torchvision==0.16.0a0 torchaudio==2.1.0a0 intel-extension-for-pytorch==2.1.10+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+    source slurm/setenv_cambridge.sh
+    # Install PyG
+    pip install torch_geometric
+    pip install torch-scatter torch-cluster
+    # Install PyTorch
+    pip install torch==2.1.0a0 torchvision==0.16.0a0 torchaudio==2.1.0a0 intel-extension-for-pytorch==2.1.10+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+    pip install oneccl_bind_pt==2.1.100+xpu -f https://pytorch-extension.intel.com/release-whl/stable/xpu/us/oneccl-bind-pt/
+    conda install -c conda-forge mpi4py -y --no-deps
     
     # check installation on XPU
     python -c "import torch; import intel_extension_for_pytorch as ipex; print(torch.__version__); print(ipex.__version__); [print(f'[{i}]: {torch.xpu.get_device_properties(i)}') for i in range(torch.xpu.device_count())];"
@@ -113,9 +121,8 @@ With a local virtual environment activated (e.g., one created with `conda create
 3. Then use the newly-installed `proteinworkshop` CLI to install [PyTorch Geometric](https://pyg.org/)
 
     ```bash
-    # workshop install pyg
-    pip install torch_geometric
-    pip install torch-scatter torch-cluster
+    workshop install pyg
+    # Alternative: pip install torch_scatter torch_cluster -f https://data.pyg.org/whl/torch-2.1.0+cu118.html
     ```
 
 4. Configure paths in `.env` (optional, will override default paths if set). See [`.env.example`](https://github.com/a-r-j/proteinworkshop/blob/main/.env.example) for an example.
