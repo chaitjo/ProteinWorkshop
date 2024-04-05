@@ -41,7 +41,7 @@ def compute_scalar_edge_features(
             n1, n2 = x.x[x.edge_index[0]], x.x[x.edge_index[1]]
             feats.append(torch.cat([n1, n2], dim=1))
         elif feature == "edge_type":
-            feats.append(x.edge_type.T)
+            feats.append(x.edge_type)
         elif feature == "orientation":
             raise NotImplementedError
         elif feature == "sequence_distance":

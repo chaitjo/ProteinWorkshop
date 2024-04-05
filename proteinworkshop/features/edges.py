@@ -75,7 +75,7 @@ def compute_edges(
             for idx, e_idx in enumerate(edges)
         ],
         dim=0,
-    ).unsqueeze(0)
+    ).unsqueeze(1)
     edges = torch.cat(edges, dim=1)
 
     return edges, indxs

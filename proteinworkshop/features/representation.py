@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import Literal, Tuple
+from typing import Literal, Tuple, Union
 
 import torch
 from beartype import beartype as typechecker
@@ -41,8 +41,8 @@ def get_full_atom_coords(
 
 @jaxtyped(typechecker=typechecker)
 def transform_representation(
-    x: Batch, representation_type: Literal["CA", "BB", "FA", "BB_SC", "CA_SC"]
-) -> Batch:
+    x: Union[Data, Batch], representation_type: Literal["CA", "BB", "FA", "BB_SC", "CA_SC"]
+) -> Union[Data, Batch]:
     """
     Factory method to transform a batch into a specified representation.
 

@@ -6,7 +6,7 @@ from beartype import beartype as typechecker
 from graphein.protein.tensor.data import ProteinBatch, get_random_batch
 from jaxtyping import jaxtyped
 from loguru import logger
-from torch_geometric.data import Batch
+from torch_geometric.data import Data, Batch
 from torch_geometric.nn.encoding import PositionalEncoding
 
 from proteinworkshop.features.edge_features import (
@@ -77,8 +77,8 @@ class ProteinFeaturiser(nn.Module):
 
     @jaxtyped(typechecker=typechecker)
     def forward(
-        self, batch: Union[Batch, ProteinBatch]
-    ) -> Union[Batch, ProteinBatch]:
+        self, batch: Union[Data, Batch, ProteinBatch]
+    ) -> Union[Data, Batch, ProteinBatch]:
         # Scalar node features
         if self.scalar_node_features:
             concat_nf = False
