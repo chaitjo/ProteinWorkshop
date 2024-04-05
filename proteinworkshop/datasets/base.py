@@ -537,19 +537,17 @@ class ProteinDataset(Dataset):
         :return: PyTorch Geometric Data object.
         """
         if self.in_memory:
-            return self._batch_format(copy.deepcopy(self.data[idx]))
-
-        if self.out_names is not None:
-            fname = f"{self.out_names[idx]}.pt"
-        elif self.chains is not None:
-            fname = f"{self.pdb_codes[idx]}_{self.chains[idx]}.pt"
+            x = copy.deepcopy(self.data[idx])
         else:
-            fname = f"{self.pdb_codes[idx]}.pt"
-
-        # return self._batch_format(torch.load(Path(self.processed_dir) / fname))
-        x = torch.load(Path(self.processed_dir) / fname)
+            if self.out_names is not None:
+                fname = f"{self.out_names[idx]}.pt"
+            elif self.chains is not None:
+                fname = f"{self.pdb_codes[idx]}_{self.chains[idx]}.pt"
+            else:
+                fname = f"{self.pdb_codes[idx]}.pt"
+            x = torch.load(Path(self.processed_dir) / fname)
+        
         x = x if self.transform is None else self.transform(x)
-        # Add features
         x.amino_acid_one_hot = amino_acid_one_hot(x)
         x.seq_pos = torch.arange(x.coords.shape[0]).unsqueeze(-1)
         return self.featuriser(x)
