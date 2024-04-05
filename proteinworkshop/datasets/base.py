@@ -5,6 +5,7 @@ import pathlib
 from abc import ABC, abstractmethod
 from functools import lru_cache
 from pathlib import Path
+from collections.abc import Sequence
 from typing import (
     Any,
     Callable,
@@ -21,6 +22,7 @@ import lightning as L
 import numpy as np
 import pandas as pd
 import torch
+from torch import Tensor
 from beartype import beartype as typechecker
 from graphein import verbose
 from graphein.protein.tensor.dataloader import ProteinDataLoader
@@ -35,7 +37,10 @@ from torch_geometric import transforms as T
 from torch_geometric.data import Data, Dataset
 from tqdm import tqdm
 
+from proteinworkshop.features.factory import ProteinFeaturiser
 from proteinworkshop.features.sequence_features import amino_acid_one_hot
+
+IndexType = Union[slice, Tensor, np.ndarray, Sequence]
 
 verbose(False)
 
@@ -286,6 +291,7 @@ class ProteinDataset(Dataset):
 
     def __init__(
         self,
+        featuriser: ProteinFeaturiser,
         pdb_codes: List[str],
         root: Optional[str] = None,
         pdb_dir: Optional[str] = None,
@@ -304,6 +310,7 @@ class ProteinDataset(Dataset):
         store_het: bool = False,
         out_names: Optional[List[str]] = None,
     ):
+        self.featuriser = featuriser
         self.pdb_codes = [pdb.lower() for pdb in pdb_codes]
         self.pdb_dir = pdb_dir
         self.pdb_paths = pdb_paths
@@ -539,13 +546,42 @@ class ProteinDataset(Dataset):
         else:
             fname = f"{self.pdb_codes[idx]}.pt"
 
-        return self._batch_format(torch.load(Path(self.processed_dir) / fname))
-
-    def _batch_format(self, x: Data) -> Data:
-        # Set this to ensure proper batching behaviour
-        x.x = torch.zeros(x.coords.shape[0])  # type: ignore
+        # return self._batch_format(torch.load(Path(self.processed_dir) / fname))
+        x = torch.load(Path(self.processed_dir) / fname)
+        x = x if self.transform is None else self.transform(x)
+        # Add features
         x.amino_acid_one_hot = amino_acid_one_hot(x)
-        x.seq_pos = torch.arange(x.coords.shape[0]).unsqueeze(
-            -1
-        )  # Add sequence position
-        return x
+        x.seq_pos = torch.arange(x.coords.shape[0]).unsqueeze(-1)
+        return self.featuriser(x)
+
+    def __getitem__(
+        self,
+        idx: Union[int, np.integer, IndexType],
+    ):
+        """In case :obj:`idx` is of type integer, will return the data object
+        at index :obj:`idx` (and transforms it in case :obj:`transform` is
+        present).
+        In case :obj:`idx` is a slicing object, *e.g.*, :obj:`[2:5]`, a list, a
+        tuple, or a :obj:`torch.Tensor` or :obj:`np.ndarray` of type long or
+        bool, will return a subset of the dataset at the specified indices.
+        """
+        if (isinstance(idx, (int, np.integer))
+                or (isinstance(idx, Tensor) and idx.dim() == 0)
+                or (isinstance(idx, np.ndarray) and np.isscalar(idx))):
+
+            data = self.get(self.indices()[idx])
+            # Move transform to get() method so that it is applied pre-featurisation
+            # data = data if self.transform is None else self.transform(data)
+            return data
+
+        else:
+            return self.index_select(idx)
+
+    # def _batch_format(self, x: Data) -> Data:
+    #     # Set this to ensure proper batching behaviour
+    #     x.x = torch.zeros(x.coords.shape[0])  # type: ignore
+    #     x.amino_acid_one_hot = amino_acid_one_hot(x)
+    #     x.seq_pos = torch.arange(x.coords.shape[0]).unsqueeze(
+    #         -1
+    #     )  # Add sequence position
+    #     return x

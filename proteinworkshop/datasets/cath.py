@@ -6,11 +6,13 @@ from pathlib import Path
 from typing import Callable, Dict, Iterable, List, Literal, Optional
 
 import omegaconf
+from omegaconf import DictConfig
 import wget
 from graphein.protein.tensor.dataloader import ProteinDataLoader
 from loguru import logger
 
 from proteinworkshop.datasets.base import ProteinDataModule, ProteinDataset
+from proteinworkshop.features.factory import ProteinFeaturiser
 
 
 class CATHDataModule(ProteinDataModule):
@@ -41,6 +43,7 @@ class CATHDataModule(ProteinDataModule):
 
     def __init__(
         self,
+        featuriser: ProteinFeaturiser,
         path: str,
         batch_size: int,
         format: Literal["mmtf", "pdb"] = "mmtf",
@@ -53,6 +56,12 @@ class CATHDataModule(ProteinDataModule):
         overwrite: bool = False,
     ) -> None:
         super().__init__()
+
+        # logger.info("Instantiating featuriser...")
+        # import ipdb; ipdb.set_trace()
+        # self.featuriser: nn.Module = hydra.utils.instantiate(featuriser_cfg)
+        self.featuriser = featuriser
+        logger.info(self.featuriser)
 
         self.data_dir = Path(path)
         self.raw_dir = self.data_dir / "raw"
@@ -165,6 +174,7 @@ class CATHDataModule(ProteinDataModule):
         chains = [pdb.split(".")[1] for pdb in self.train_pdbs]
 
         return ProteinDataset(
+            featuriser=self.featuriser,
             root=str(self.data_dir),
             pdb_dir=self.pdb_dir,
             pdb_codes=pdb_codes,
@@ -188,6 +198,7 @@ class CATHDataModule(ProteinDataModule):
         chains = [pdb.split(".")[1] for pdb in self.val_pdbs]
 
         return ProteinDataset(
+            featuriser=self.featuriser,
             root=str(self.data_dir),
             pdb_dir=self.pdb_dir,
             pdb_codes=pdb_codes,
@@ -210,6 +221,7 @@ class CATHDataModule(ProteinDataModule):
         chains = [pdb.split(".")[1] for pdb in self.test_pdbs]
 
         return ProteinDataset(
+            featuriser=self.featuriser,
             root=str(self.data_dir),
             pdb_dir=self.pdb_dir,
             pdb_codes=pdb_codes,
